@@ -1,10 +1,8 @@
 package dev.akrap.algobot.comands.pool;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import dev.akrap.algobot.storage.FileStorageUtil;
+import dev.akrap.algobot.comands.service.PoolService;
+import dev.akrap.algobot.model.pool.PoolData;
 import picocli.CommandLine;
-
-import java.util.List;
 
 @CommandLine.Command(
         name = "list",
@@ -12,25 +10,21 @@ import java.util.List;
 )
 public class PoolListCommand implements Runnable {
 
-    private static final String FILE_NAME = "pool.json";
+    private final PoolService poolService = new PoolService();
 
     @Override
     public void run() {
-        List<Integer> pool = FileStorageUtil.readList(FILE_NAME, new TypeReference<>() {
-        });
+        PoolData data = poolService.getData();
 
-        if(pool.isEmpty()){
-            System.out.println("POOL이 비어있습니다. 문제를 추가해주세요");
-            System.out.println("예시 : algo pool add 1000");
+        System.out.println("=== POOL 목록 ===");
+
+        if (data.getItems().isEmpty()) {
+            System.out.println("(등록된 문제가 없습니다)");
             return;
         }
 
-        System.out.println("현재 문제 등록 (" + pool.size() + ")" );
-        System.out.println("---------------------");
-
-        for(Integer problem : pool){
-            System.out.println("- " + problem);
+        for (int pid : data.getItems()) {
+            System.out.println("- " + pid);
         }
-
     }
 }

@@ -1,10 +1,8 @@
-package dev.akrap.algobot.model;
+package dev.akrap.algobot.model.review;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ReviewItem {
 
@@ -16,7 +14,6 @@ public class ReviewItem {
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate createdAt;           // 처음 공부한 날짜
-
 
     public ReviewItem() {
 
@@ -56,10 +53,6 @@ public class ReviewItem {
         return stage;
     }
 
-    public List<String> getHistory() {
-        return history;
-    }
-
     public LocalDate getNextReviewDate() {
         return nextReviewDate;
     }
@@ -74,10 +67,6 @@ public class ReviewItem {
 
     public void setStage(int stage) {
         this.stage = stage;
-    }
-
-    public void setHistory(List<String> history) {
-        this.history = history;
     }
 
     public void setNextReviewDate(LocalDate nextReviewDate) {

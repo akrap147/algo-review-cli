@@ -3,20 +3,22 @@
  */
 package dev.akrap.algobot;
 
-import dev.akrap.algobot.comands.DoneCommand;
-import dev.akrap.algobot.comands.PoolCommand;
-import dev.akrap.algobot.comands.ReviewCommand;
+import dev.akrap.algobot.comands.done.DoneCommand;
+import dev.akrap.algobot.comands.TodoCommand;
+import dev.akrap.algobot.comands.pool.PoolCommand;
+import dev.akrap.algobot.comands.review.ReviewCommand;
 import picocli.CommandLine;
 import picocli.CommandLine.*;
 
 @Command(
         name = "algo",
-        description = "알고리즘 자동 review 설정 CLI 모드입니다",
+        description = "백준 알고리즘 문제를 자동 review날짜를 제공하는 CLI입니다",
         mixinStandardHelpOptions = true,
         subcommands = {
                 ReviewCommand.class,
                 PoolCommand.class,
-                DoneCommand.class
+                DoneCommand.class,
+                TodoCommand.class
         }
 )
 public class App implements Runnable {
