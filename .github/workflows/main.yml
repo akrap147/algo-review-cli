@@ -44,3 +44,14 @@ jobs:
           git add version.txt
           git commit -m "ci: bump version to ${{ env.new_version }}" || echo "No changes"
           git push
+      - name: tag auto create
+        if: env.new_version != ''
+        run: |
+          git config user.email "action@github.com"
+          git config user.name "GitHub Actions"
+          
+          tag="v${{ env.new_version }}"
+          echo "Creae tag: $tag"
+          
+          git tag $tag
+          git push origin $tag
