@@ -53,7 +53,7 @@ jobs:
       - name: tag auto create
         if: env.new_version != ''
         run: |
-          git config user.email "action@github.com"
+          git config user.email "actions@github.com"
           git config user.name "GitHub Actions"
           
           tag="v${{ env.new_version }}"
@@ -76,9 +76,7 @@ jobs:
           cp app/build/libs/*.jar app.jar
           echo "JAR build complete"
 
-      # -----------------------------------------------------------
-      # 5) GitHub Release 생성 + JAR 업로드
-      # -----------------------------------------------------------
+      # GitHub Release 생성 + JAR 업로드
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -87,7 +85,22 @@ jobs:
           files: |
             app.jar
 
+      # homebrew를 위한 sha256 키 생성
+      - name: Compute SHA256 for Homebrew
+        run: |
+          release_url="https://github.com/akrap147/algo-review-cli/releases/download/v${{ env.new_version }}/app.jar"
+          curl -L -o app.jar "$release_url"
+          sha256=$(shasum -a 256 app.jar | cut -d ' ' -f 1)
+          echo "sha256=$sha256" >> $GITHUB_ENV      
 
 
-
+      # homebrew의 formula 자동 업데이트
+      - name: Update Homebrew Formula
+        uses: dawidd6/action-homebrew-tap@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tap: akrap147/homebrew-akrap
+          formula: algo.rb
+          url: "https://github.com/akrap147/algo-review-cli/releases/download/v${{ env.new_version }}/app.jar"
+          sha256: ${{ env.sha256 }}
 
