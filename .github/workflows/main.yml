@@ -3,7 +3,7 @@ name: Auto Version Bump
 on:
   push:
     branches:
-      - main  # 네가 쓰는 메인 브랜치 이름에 맞게 수정 가능
+      - main  
 
 permissions:
   contents: write
