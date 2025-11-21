@@ -3,7 +3,7 @@ name: Auto Version Bump
 on:
   push:
     branches:
-      - main  
+      - main
 
 permissions:
   contents: write
@@ -17,6 +17,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      ## 1단계 version.txt읽기 + patch 자동 증가
 
       - name: Read and bump patch version
         id: bump
@@ -36,6 +38,7 @@ jobs:
           echo "New version: $new_version"
           echo "new_version=$new_version" >> $GITHUB_ENV
 
+      ## version.txt 자동 커밋 푸쉬
       - name: Commit bumped version
         run: |
           git config user.email "actions@github.com"
@@ -44,6 +47,9 @@ jobs:
           git add version.txt
           git commit -m "ci: bump version to ${{ env.new_version }}" || echo "No changes"
           git push
+      
+
+      ## tag자동 생성
       - name: tag auto create
         if: env.new_version != ''
         run: |
@@ -55,3 +61,33 @@ jobs:
           
           git tag $tag
           git push origin $tag
+
+      ## JAR빌드 , java 17 version
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+
+      - name: Build JAR
+        run: |
+          chmod +x ./gradlew
+          ./gradlew clean build
+          cp build/libs/*.jar app.jar
+          echo "JAR build complete"
+
+      # -----------------------------------------------------------
+      # 5) GitHub Release 생성 + JAR 업로드
+      # -----------------------------------------------------------
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "v${{ env.new_version }}"
+          name: "v${{ env.new_version }}"
+          files: |
+            app.jar
+
+
+
+
+
