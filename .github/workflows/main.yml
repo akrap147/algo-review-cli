@@ -85,22 +85,41 @@ jobs:
           files: |
             app.jar
 
-      # homebrew를 위한 sha256 키 생성
       - name: Compute SHA256 for Homebrew
         run: |
           release_url="https://github.com/akrap147/algo-review-cli/releases/download/v${{ env.new_version }}/app.jar"
           curl -L -o app.jar "$release_url"
           sha256=$(shasum -a 256 app.jar | cut -d ' ' -f 1)
-          echo "sha256=$sha256" >> $GITHUB_ENV      
 
+          echo "Computed SHA256: $sha256"
+          echo "sha256=$sha256" >> $GITHUB_ENV
 
-      # homebrew의 formula 자동 업데이트
-      - name: Update Homebrew Formula
-        uses: dawidd6/action-homebrew-tap@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tap: akrap147/homebrew-akrap
-          formula: algo.rb
-          url: "https://github.com/akrap147/algo-review-cli/releases/download/v${{ env.new_version }}/app.jar"
-          sha256: ${{ env.sha256 }}
+      # 직접 나의 homebrew repo에다가 Push를 하기 위한 clone
+      - name: Clone Homebrew Tap
+        run: |
+         git clone https://x-access-token:${{ secrets.HOMEBREW_TAP_TOKEN }}@github.com/akrap147/homebrew-akrap.git tap
 
+      # formula 내용 수정 (url + sha256 치환)
+      - name: Update Homebrew Formula (URL + SHA256)
+        run: |
+          cd tap/Formula
+
+          # URL 안전 치환
+          sed -i 's|^  url ".*"|  url "https://github.com/akrap147/algo-review-cli/releases/download/v'${{ env.new_version }}'/app.jar"|' algo.rb
+
+          # SHA256 안전 치환
+          sed -i 's|^  sha256 ".*"|  sha256 "'${{ env.sha256 }}'"|' algo.rb
+
+          echo "Updated formula:"
+          cat algo.rb
+
+      # Formula commit & push
+      - name: Commit and Push Formula Update
+        run: |
+          cd tap
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+
+          git add Formula/algo.rb
+          git commit -m "brew: bump formula to v${{ env.new_version }}" || echo "No changes to commit"
+          git push
