@@ -1,0 +1,46 @@
+name: Auto Version Bump
+
+on:
+  push:
+    branches:
+      - main  # 네가 쓰는 메인 브랜치 이름에 맞게 수정 가능
+
+permissions:
+  contents: write
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Read and bump patch version
+        id: bump
+        run: |
+          version=$(cat version.txt)
+          echo "Current version: $version"
+
+          IFS='.' read -ra parts <<< "$version"
+          major=${parts[0]}
+          minor=${parts[1]}
+          patch=${parts[2]}
+
+          patch=$((patch + 1))
+          new_version="$major.$minor.$patch"
+
+          echo "$new_version" > version.txt
+          echo "New version: $new_version"
+          echo "new_version=$new_version" >> $GITHUB_ENV
+
+      - name: Commit bumped version
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+
+          git add version.txt
+          git commit -m "ci: bump version to ${{ env.new_version }}" || echo "No changes"
+          git push
