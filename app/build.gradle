@@ -8,6 +8,7 @@
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
+    id 'com.gradleup.shadow' version '9.2.2'
 }
 
 repositories {
@@ -36,7 +37,33 @@ java {
     }
 }
 
+tasks.jar {
+    enabled = false   // 기본 jar 제거
+}
+
+tasks.startScripts {
+    enabled = false   // application plugin 스크립트 비활성화
+}
+
+
+shadowJar {
+    // 개별 속성 대신 archive file name 전체 지정
+    archiveFileName.set("app.jar")
+    destinationDirectory.set(file("$projectDir/build/libs"))
+}
+
+
 application {
-    // Define the main class for the application.
     mainClass = 'dev.akrap.algobot.App'
 }
+
+tasks.jar {
+    manifest {
+        attributes(
+                "Main-Class": "dev.akrap.algobot.App"
+        )
+    }
+}
+tasks.named("distTar").configure { enabled = false }
+tasks.named("distZip").configure { enabled = false }
+tasks.named("startScripts").configure { enabled = false }
